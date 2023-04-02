@@ -11,15 +11,18 @@ defmodule PasswordCrackerChallenge do
   def guess_password(hash), do: guess_password(hash, 0)
   def guess_password(hash, n) do
     n * @chunk_size..(n + 1) * @chunk_size
-    |> Enum.chunk_every(div(@chunk_size, 2))
+    |> Enum.chunk_every(div(@chunk_size, 4))
     |> Enum.map(&(Task.async(fn -> check_list_of_numbers(&1, hash) end)))
     |> Enum.map(&Task.await/1)
     |> List.flatten()
-    |> Enum.filter(&match?({true, _}, &1))
+    |> Enum.filter(fn
+      {true, _} -> true
+      _ -> false
+    end)
     |> case do
-        [] -> guess_password(hash, n + 1)
-        [true: x] -> x
-      end
+      [] -> guess_password(hash, n + 1)
+      [true: x] -> x
+    end
   end
 
   defp check_list_of_numbers(numbers, hash) do
