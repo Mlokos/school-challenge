@@ -6,7 +6,7 @@ defmodule PasswordCrackerChallenge do
 
   TIP: należy zwrócić uwagę, czy apostrofy są '' (lista znaków) czy "" (String, binary)
   """
-  @chunk_size 16_000_000
+  @chunk_size 12_000_000
   @parallelizaiton 4
 
   def guess_password(hash), do: guess_password(hash, 0)
