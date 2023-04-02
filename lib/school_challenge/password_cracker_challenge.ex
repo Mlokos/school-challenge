@@ -6,28 +6,21 @@ defmodule PasswordCrackerChallenge do
 
   TIP: należy zwrócić uwagę, czy apostrofy są '' (lista znaków) czy "" (String, binary)
   """
-  @chunk_size 3_000_000
-
   def guess_password(hash), do: guess_password(hash, 0)
+  def guess_password(_hash, 10), do: raise "Password not found"
   def guess_password(hash, n) do
-    n * @chunk_size..(n + 1) * @chunk_size
-    |> Enum.chunk_every(div(@chunk_size, 4))
-    |> Enum.map(&(Task.async(fn -> check_list_of_numbers(&1, hash) end)))
-    |> Enum.map(&Task.await/1)
-    |> List.flatten()
-    |> Enum.filter(fn
+    trunc(:math.pow(26, n)) - 1..trunc(:math.pow(26, n + 1)) - 1
+    |> Flow.from_enumerable()
+    |> Flow.map(&check_number(&1, hash))
+    |> Flow.filter(fn
       {true, _} -> true
       _ -> false
     end)
+    |> Enum.to_list()
     |> case do
       [] -> guess_password(hash, n + 1)
-      [true: x] -> x
+      [{true, x}] -> x
     end
-  end
-
-  defp check_list_of_numbers(numbers, hash) do
-    numbers
-    |> Enum.map(&check_number(&1, hash))
   end
 
   defp check_number(number, hash) do
